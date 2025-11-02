@@ -1,10 +1,11 @@
 import json
+import os
 from typing import Any, Optional
 
 
 def fetch_blog_posts() -> Optional[Any]:
     try:
-        with open("data/posts.json", "r") as file_obj:
+        with open(os.path.join(os.getcwd(), "data", "posts.json"), "r") as file_obj:
             return json.load(file_obj)
     except FileNotFoundError:
         print("Error: File database posts.json not found")
@@ -12,7 +13,7 @@ def fetch_blog_posts() -> Optional[Any]:
 
 def save_posts(posts: list[dict]) -> None:
     try:
-        with open("data/posts.json", "w") as file_obj:
+        with open(os.path.join(os.getcwd(), "data", "posts.json"), "w") as file_obj:
             file_obj.write(json.dumps(posts))
     except FileNotFoundError:
         print("Error: File database posts.json not found")
