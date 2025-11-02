@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
@@ -7,10 +9,19 @@ CORS(app)  # This will enable CORS for all routes
 SWAGGER_URL = "/api/docs"
 API_URL="/static/masterblog.json"
 
-POSTS = [
-    {"id": 1, "title": "First post", "content": "This is the first post."},
-    {"id": 2, "title": "Second post", "content": "This is the second post."},
-]
+POSTS = [{
+    "id": 1,
+    "title": "First post",
+    "content": "This is the first post.",
+    "author": "John Doe",
+    "date": "2023-06-07"
+}, {
+    "id": 2,
+    "title": "Second post",
+    "content": "This is the second post.",
+    "author": "Jane Doe",
+    "date": "2023-06-07"
+}]
 
 
 @app.route('/api/posts', methods=['GET'])
@@ -42,28 +53,44 @@ def get_posts():
 
 @app.route('/api/posts', methods=['POST'])
 def create_post():
-    req_body = request.get_json()
+    data = request.get_json()
 
-    if not req_body['title'] and not req_body['content']:
+    if ('title' not in data and 'content' not in data
+        and 'author' not in data and 'date' not in data):
         return jsonify({
-            "message": "Invalid request body: 'title' and 'content' are missing"
+            "message": "Invalid request body: 'title', 'content', 'author' and 'date' are missing"
         }), 400
-    elif not req_body['title']:
+    elif 'title' not in data:
         return jsonify({
             "message": "Invalid request body: 'title' is missing"
         }), 400
-    elif not req_body['content']:
+    elif 'content' not in data:
         return jsonify({
             "message": "Invalid request body: 'content' is missing"
         }), 400
+    elif 'author' not in data:
+        return jsonify({
+            "message": "Invalid request body: 'author' is missing"
+        }), 400
+    elif 'date' not in data:
+        return jsonify({
+            "message": "Invalid request body: 'date' is missing"
+        }), 400
 
-    new_post = {
-        "id": POSTS[-1]['id'] + 1,
-        "title": req_body['title'],
-        "content": req_body['content']
-    }
+    try:
+        new_post = {
+            "id": POSTS[-1]['id'] + 1,
+            "title": data['title'],
+            "content": data['content'],
+            "author": data['author'],
+            "date": datetime.strptime(data['date'], '%Y-%m-%d')
+        }
+    except ValueError:
+        return jsonify({
+            "message": "Invalid date format: Provide date by following format: YYYY-MM-DD"
+        }), 400
+
     POSTS.append(new_post)
-
     return jsonify(new_post), 201
 
 
