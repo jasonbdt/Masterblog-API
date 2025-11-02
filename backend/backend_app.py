@@ -154,6 +154,22 @@ def search_post():
         for result in posts:
             results.append(result)
 
+    author = request.args.get('author')
+    if author:
+        posts = list(filter(
+            lambda post: author.lower() in post['author'].lower(), POSTS
+        ))
+        for result in posts:
+            results.append(result)
+
+    date = request.args.get('date')
+    if date:
+        posts = list(filter(
+            lambda post: date.lower() == post['date'].lower(), POSTS
+        ))
+        for result in posts:
+            results.append(result)
+
     return jsonify(results), 200
 
 
