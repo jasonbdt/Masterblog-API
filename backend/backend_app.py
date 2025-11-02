@@ -57,5 +57,24 @@ def delete_post(post_id: int):
     }), 200
 
 
+@app.route('/api/posts/<int:post_id>', methods=['PUT'])
+def update_post(post_id: int):
+    post = list(filter(lambda post: post['id'] == post_id, POSTS))
+
+    if not post:
+        return jsonify({
+            "message": f"Post with ID {post_id} doesn't exists."
+        }), 404
+
+    req_body = request.get_json()
+    if 'title' in req_body:
+        post[0].update({"title": req_body['title']})
+
+    if 'content' in req_body:
+        post[0].update({"content": req_body['content']})
+
+    return jsonify(post[0]), 200
+
+
 if __name__ == '__main__':
     app.run(host="0.0.0.0", port=5002, debug=True)
