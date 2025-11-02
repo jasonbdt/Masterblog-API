@@ -13,17 +13,173 @@
         "parameters": [{
           "in": "query",
           "name": "sort",
+          "enum": ["title", "content"],
           "type": "string"
         }, {
           "in": "query",
           "name": "direction",
+          "enum": ["asc", "desc"],
           "type": "string"
         }],
         "tags": ["Post"],
         "responses": {
           "200": {
-            "description": "Successful operation"
+            "description": "List of post objects",
+            "schema": {
+              "$ref": "#/definitions/Posts"
+            }
           }
+        }
+      },
+      "post": {
+        "summary": "Create a new blog post",
+        "produces": ["application/json"],
+        "consumes": ["application/json"],
+        "parameters": [{
+          "in": "body",
+          "name": "post",
+          "description": "The post to create",
+          "schema": {
+            "$ref": "#/definitions/PostBody"
+          }
+        }],
+        "tags": ["Post"],
+        "responses": {
+          "201": {
+            "description": "A post object",
+            "schema": {
+              "$ref": "#/definitions/Post"
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "schema": {
+              "$ref": "#/definitions/JSONResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/posts/{id}": {
+      "delete": {
+        "summary": "Delete a Post by ID",
+        "tags": ["Post"],
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "description": "The unique post identifier",
+          "required": true,
+          "type": "integer"
+        }],
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "schema": {
+              "$ref": "#/definitions/JSONResponse"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/JSONResponse"
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update a Post by ID",
+        "tags": ["Post"],
+        "parameters": [{
+          "in": "path",
+          "name": "id",
+          "description": "The unique post identifier",
+          "required": true,
+          "type": "integer"
+        }, {
+          "in": "body",
+          "name": "post",
+          "description": "Post with updated parameters",
+          "schema": {
+            "$ref": "#/definitions/PostBody"
+          }
+        }],
+        "responses": {
+          "200": {
+            "description": "Updated post object",
+            "schema": {
+              "$ref": "#/definitions/Post"
+            }
+          },
+          "404": {
+            "description": "Not Found",
+            "schema": {
+              "$ref": "#/definitions/JSONResponse"
+            }
+          }
+        }
+      }
+    },
+    "/api/posts/search": {
+      "get": {
+        "summary": "Search for a specific post",
+        "tags": ["Post"],
+        "parameters": [{
+          "in": "query",
+          "name": "title",
+          "type": "string"
+        }, {
+          "in": "query",
+          "name": "content",
+          "type": "string"
+        }],
+        "responses": {
+          "200": {
+            "description": "List of post objects",
+            "schema": {
+              "$ref": "#/definitions/Posts"
+            }
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "Post": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "integer"
+        },
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "Posts": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/Post"
+      }
+    },
+    "PostBody": {
+      "type": "object",
+      "properties": {
+        "title": {
+          "type": "string"
+        },
+        "content": {
+          "type": "string"
+        }
+      }
+    },
+    "JSONResponse": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
         }
       }
     }
