@@ -118,12 +118,18 @@ def update_post(post_id: int):
             "message": f"Post with ID {post_id} doesn't exists."
         }), 404
 
-    req_body = request.get_json()
-    if 'title' in req_body:
-        post[0].update({"title": req_body['title']})
+    data = request.get_json()
+    if 'title' in data:
+        post[0].update({"title": data['title']})
 
-    if 'content' in req_body:
-        post[0].update({"content": req_body['content']})
+    if 'content' in data:
+        post[0].update({"content": data['content']})
+
+    if 'author' in data:
+        post[0].update({"author": data['author']})
+
+    if 'date' in data:
+        post[0].update({"date": datetime.strptime(data['date'], '%Y-%m-%d')})
 
     return jsonify(post[0]), 200
 
