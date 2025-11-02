@@ -26,9 +26,16 @@ function loadPosts() {
             // For each post in the response, create a new post element and add it to the page
             data.forEach(post => {
                 const postDiv = document.createElement('div');
+                const postDate = new Date(post.date)
+
+                const day = ('0' + (postDate.getDate())).slice(-2)
+                console.log(day)
+                const month = ('0' + (postDate.getMonth() + 1)).slice(-2)
+                const date = `${postDate.getFullYear()}-${month}-${day}`
                 postDiv.className = 'post';
                 postDiv.innerHTML = `<h2>${post.title}</h2><p>${post.content}</p>
-                <button onclick="deletePost(${post.id})">Delete</button>`;
+                <button onclick="deletePost(${post.id})">Delete</button>
+                <footer><small>${post.author} posted on ${date}</small></footer>`;
                 postContainer.appendChild(postDiv);
             });
         })
