@@ -4,7 +4,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
 app = Flask(__name__)
-CORS(app)  # This will enable CORS for all routes
+CORS(app)
 
 SWAGGER_URL = "/api/docs"
 API_URL="/static/masterblog.json"
@@ -14,13 +14,13 @@ POSTS = [{
     "title": "First post",
     "content": "This is the first post.",
     "author": "John Doe",
-    "date": "2023-06-07"
+    "date": datetime.strptime("2023-06-07", '%Y-%m-%d')
 }, {
     "id": 2,
     "title": "Second post",
     "content": "This is the second post.",
     "author": "Jane Doe",
-    "date": "2023-06-07"
+    "date": datetime.strptime("2023-06-07", '%Y-%m-%d')
 }]
 
 
@@ -36,7 +36,7 @@ def get_posts():
             })
 
     if sorting_key or sorting_key == "":
-        if sorting_key.lower() not in ['title', 'content']:
+        if sorting_key.lower() not in ['title', 'content', 'author', 'date']:
             return jsonify({
                 "message": "Bad Request: Invalid sort key. Use 'title' or 'content'."
             }), 400
