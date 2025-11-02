@@ -3,25 +3,13 @@ from datetime import datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_swagger_ui import get_swaggerui_blueprint
+
+import utils
 app = Flask(__name__)
 CORS(app)
 
 SWAGGER_URL = "/api/docs"
 API_URL="/static/masterblog.json"
-
-POSTS = [{
-    "id": 1,
-    "title": "First post",
-    "content": "This is the first post.",
-    "author": "John Doe",
-    "date": datetime.strptime("2023-06-07", '%Y-%m-%d')
-}, {
-    "id": 2,
-    "title": "Second post",
-    "content": "This is the second post.",
-    "author": "Jane Doe",
-    "date": datetime.strptime("2023-06-07", '%Y-%m-%d')
-}]
 
 
 @app.route('/api/posts', methods=['GET'])
@@ -43,12 +31,12 @@ def get_posts():
 
         reverse_sort = True if sort_direction == 'desc' else False
         return jsonify(
-            sorted(POSTS,
+            sorted(utils.fetch_blog_posts(),
                    key=lambda post: post[sorting_key.lower()],
                    reverse=reverse_sort)
         ), 200
 
-    return jsonify(POSTS), 200
+    return jsonify(utils.fetch_blog_posts()), 200
 
 
 @app.route('/api/posts', methods=['POST'])
@@ -77,33 +65,39 @@ def create_post():
             "message": "Invalid request body: 'date' is missing"
         }), 400
 
+    posts = utils.fetch_blog_posts()
     try:
         new_post = {
-            "id": POSTS[-1]['id'] + 1,
+            "id": posts[-1].get('id', 0) + 1,
             "title": data['title'],
             "content": data['content'],
             "author": data['author'],
-            "date": datetime.strptime(data['date'], '%Y-%m-%d')
+            "date": data['date']
         }
     except ValueError:
         return jsonify({
             "message": "Invalid date format: Provide date by following format: YYYY-MM-DD"
         }), 400
 
-    POSTS.append(new_post)
+    posts.append(new_post)
+    utils.save_posts(posts)
+
     return jsonify(new_post), 201
 
 
 @app.route('/api/posts/<int:post_id>', methods=['DELETE'])
 def delete_post(post_id: int):
-    post = list(filter(lambda post: post['id'] == post_id, POSTS))
+    posts = utils.fetch_blog_posts()
+    post = list(filter(lambda post: post['id'] == post_id, posts))
 
     if not post:
         return jsonify({
             "message": f"Post with ID {post_id} doesn't exists."
         }), 404
 
-    POSTS.remove(post[0])
+    posts.remove(post[0])
+    utils.save_posts(posts)
+
     return jsonify({
         "message": f"Post with id {post_id} has been deleted successfully."
     }), 200
@@ -111,7 +105,8 @@ def delete_post(post_id: int):
 
 @app.route('/api/posts/<int:post_id>', methods=['PUT'])
 def update_post(post_id: int):
-    post = list(filter(lambda post: post['id'] == post_id, POSTS))
+    posts = utils.fetch_blog_posts()
+    post = list(filter(lambda post: post['id'] == post_id, posts))
 
     if not post:
         return jsonify({
@@ -131,17 +126,19 @@ def update_post(post_id: int):
     if 'date' in data:
         post[0].update({"date": datetime.strptime(data['date'], '%Y-%m-%d')})
 
+    utils.save_posts(posts)
     return jsonify(post[0]), 200
 
 
 @app.route('/api/posts/search', methods=['GET'])
 def search_post():
     results = []
+    blog_posts = utils.fetch_blog_posts()
 
     title = request.args.get('title')
     if title:
         posts = list(filter(
-            lambda post: title.lower() in post['title'].lower(), POSTS
+            lambda post: title.lower() in post['title'].lower(), blog_posts
         ))
         for result in posts:
             results.append(result)
@@ -149,7 +146,7 @@ def search_post():
     content = request.args.get('content')
     if content:
         posts = list(filter(
-            lambda post: content.lower() in post['content'].lower(), POSTS
+            lambda post: content.lower() in post['content'].lower(), blog_posts
         ))
         for result in posts:
             results.append(result)
@@ -157,7 +154,7 @@ def search_post():
     author = request.args.get('author')
     if author:
         posts = list(filter(
-            lambda post: author.lower() in post['author'].lower(), POSTS
+            lambda post: author.lower() in post['author'].lower(), blog_posts
         ))
         for result in posts:
             results.append(result)
@@ -165,7 +162,7 @@ def search_post():
     date = request.args.get('date')
     if date:
         posts = list(filter(
-            lambda post: date.lower() == post['date'].lower(), POSTS
+            lambda post: date.lower() == post['date'].lower(), blog_posts
         ))
         for result in posts:
             results.append(result)
